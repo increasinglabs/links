@@ -12,14 +12,8 @@
         "https://api.github.com/repos/increasinglabs/links/issues/";
       var PATH_SEGMENTS_TO_SKIP = 0;
       /**
-       * DO NOT TOUCH ANYTHING BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU ARE DOING
+       * Modified to remove validation checks
        */
-      function isUrl(url) {
-        // Modified regex to support both http(s):// and market:// URLs
-        return /^(https?:\/\/|market:\/\/)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}(\.[-a-zA-Z0-9@:%._\+~#=]{2,24})?\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)+$/.test(
-          url
-        );
-      }
       function redirect() {
         var location = window.location;
         var issueNumber = location.pathname.split("/")[
@@ -37,21 +31,12 @@
         xhr.onload = function () {
           try {
             var payload = JSON.parse(xhr.response);
-            var message = payload.message;
             var title = payload.title;
-            // Workaround IE 11 lack of support for new URL()
-            var url = document.createElement("a");
-            url.setAttribute("href", title);
-            // Invalid URLs includes invalid issue numbers, issue titles that are not URLs, and recursive destination URLs
-            var isInvalidUrl =
-              message === "Not Found" ||
-              !title ||
-              !isUrl(title) ||
-              (url.protocol !== "market:" && url.hostname === location.hostname);
-            if (isInvalidUrl) {
-              location.replace(homepage);
-            } else {
+            // Directly redirect to the title without any validation
+            if (title) {
               location.replace(title);
+            } else {
+              location.replace(homepage);
             }
           } catch (e) {
             location.replace(homepage);
